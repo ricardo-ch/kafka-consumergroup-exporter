@@ -66,6 +66,7 @@ public class App {
     for (TopicPartition tp : partitions.keySet()) {
       // get the offset in the source cluster
       long offset = partitions.get(tp).offset();
+      log.info(tp.toString() + " committed offset on source cluster is " + offset);
 
       // get the timestamp associated to the offset
       dataCenterConsumer.assign(ImmutableList.of(tp));
@@ -75,7 +76,7 @@ public class App {
       long timestamp = 0;
 
       if (consumerRecords.isEmpty()) {
-        log.warn(tp.toString() + ": no message could be consumed");
+        log.warn(tp.toString() + ": no message could be consumed from source cluster");
       } else {
         ConsumerRecord record = (ConsumerRecord) consumerRecords.iterator().next();
 
@@ -90,7 +91,7 @@ public class App {
         if (remoteOffset != null && remoteOffset.get(tp) != null) {
           long remoteOffsetValue = remoteOffset.get(tp).offset() + 1L;
 
-          log.info(tp.toString() + ": translated to remote offset " + remoteOffsetValue);
+          log.info(tp.toString() + ": translated to offset " + remoteOffsetValue + " on destination cluster");
 
           cloudConsumer.commitSync(ImmutableMap.of(tp, new OffsetAndMetadata(remoteOffsetValue)));
           continue;
